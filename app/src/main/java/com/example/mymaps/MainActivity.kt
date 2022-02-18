@@ -1,13 +1,18 @@
 package com.example.mymaps
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.Serializable
 
-data class Place(val title: String, val description: String, val latitude: Double, val longitude: Double)
-data class UserMap(val title: String, val places: List<Place>)
+data class Place(val title: String, val description: String, val latitude: Double, val longitude: Double) : Serializable
+data class UserMap(val title: String, val places: List<Place>) : Serializable
 
+const val EXTRA_USER_MAP = "EXTRA_USER_MAP"
+private const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,7 +20,16 @@ class MainActivity : AppCompatActivity() {
 
         val userMaps = generateSampleData()
         // attach an adapter to recycler view
-        rvMapTitles.adapter = MapsAdapter(this, userMaps)
+        rvMapTitles.adapter = MapsAdapter(this, userMaps, object : MapsAdapter.OnClickListener {
+            override fun onItemClick(position: Int) {
+                Log.i(TAG, "Clicked at position $position")
+                // When user clicks on a rv item, navigate to new activity
+                val intent = Intent(this@MainActivity, DisplayMapActivity::class.java)
+                intent.putExtra(EXTRA_USER_MAP, userMaps[position])
+                startActivity(intent)
+            }
+
+        })
         // attach a layout manager to recycler view
         rvMapTitles.layoutManager = LinearLayoutManager(this)
     }
